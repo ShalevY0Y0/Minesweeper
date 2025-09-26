@@ -1,398 +1,135 @@
- function mineOrNotFactory(minesAroundCount, isShown, isMine, isMarked){
-    return {
-        minesAroundCount: minesAroundCount
-         , isShown: isShown
-         , isMine: isMine
-         , isMarked: isMarked
+/*
+# use js to render the board. It also means creating the proper html from the renderBoard function.
+# creating the board in a general way - use createBoard() to create 4 by 4, 8 by 8, 12 by 12,.., n by n .....
+# create a game loop
+
+1. first- lets render a board 4 by 4 dynamicly. later i'll generalize it.
+*/
+
+// Factory
+function createCell(MinesAroundCount, isShown, isMine, isMarked){
+    var cell = {
+        MinesAroundCount: MinesAroundCount,
+        isShown: isShown,
+        isMine: isMine,
+        isMarked: isMarked
     }
-
- }
-
-var gBoard = [
- [mineOrNotFactory(0,false,false,false),mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false)],
- [mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false)],
- [mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false),mineOrNotFactory(0,false,false,false)],
- [mineOrNotFactory(0,false,false,false), mineOrNotFactory(0,false,false,false),mineOrNotFactory(0,false,false,false),mineOrNotFactory(0,false,false,false)], 
- ]
-
-function randomizeIndex (){
-    var randomI = Math.floor((Math.random()*4));
-    var randomJ = Math.floor((Math.random()*4));
-    return [randomI, randomJ];
+    return cell
 }
 
-function randomizeMine(board){
-    var notEqual = true;
-    while(notEqual){
-        firstMine = randomizeIndex();
-        secondMine = randomizeIndex();
-        for (let i = 0; i < 2; i ++){
-            if(firstMine[i] != secondMine[i]){
-                notEqual = false
+
+
+// 4 X 4 -> 2 Mines, 8 X 8 -> 12 Mines, 12 X 12 -> 30 Mines
+function randomizeMines(size,Mines){
+    var x = 0;
+    var rowColArr = []; // all [i,j] of the matrix
+    var randomMines = []; // here will be the random [i,j] places that will be used for Mines
+    for(let i = 0; i < size; i++){
+        for(let j = 0; j < size; j++){
+            rowColArr.push([i,j,0]);
+        }
+    }
+    
+    while(x != Mines){
+        var randomIndex = Math.floor(Math.random()*((size) ** 2)); // if 8 X 8 then i = 0,...,63
+            if (rowColArr[randomIndex][2] == 0){
+                randomMines.push(rowColArr[randomIndex])
+                rowColArr[randomIndex][2] += 1;
+                x++;
+            }
+    }
+    return randomMines;
+}
+
+
+// Creating 2D arrays of Cells
+// Default isShown: false
+function createBoard(size,mines){
+    var board = [];
+    for(let i = 0; i < size; i++){
+        const row = [];
+        for(let j =0; j<size; j++){
+            row.push(createCell(0,false,false,false))
+        }
+        board.push(row)
+    }
+    var randomMines = randomizeMines(size,mines);
+    for(let i = 0; i < randomMines.length; i ++){ //[i,j,1]
+        board[randomMines[i][0]][randomMines[i][1]].isMine = true;
+    }
+    
+    return board;
+}
+
+// Barak's Help
+function setMinesNegsCountHelper(Ci,Cj,board){
+    for (let i = Ci-1; i <= Ci + 1; i++){
+        if(i < 0 || i >= board.length){
+            continue;
+        }
+        for(let j = Cj - 1; j <= Cj + 1; j++){
+            if(j < 0 || j >= board.length){
+                continue;
+            }
+            if ((Ci == i && Cj == j)){
+                continue;
+            }
+            if (board[i][j].isMine == true){
+                board[Ci][Cj].MinesAroundCount++;
             }
         }
-
     }
-    board[firstMine[0]][firstMine[1]].isMine = true;
-    board[secondMine[0]][secondMine[1]].isMine = true;
-    
 }
 
-
+// Counting mines around each cell
+function setMinesNegsCount(board){
+    for(let r = 0; r < board.length; r++){
+        for(let c = 0; c < board.length; c++){
+            setMinesNegsCountHelper(r,c,board)
+        }
+    }    
+}
 
 function renderBoard(board){
-    for( let i = 0; i < board.length; i++){
-        for(let j = 0; j < board[i].length; j++){
-            if(board[i][j].isShown == true){
-                if(board[i][j].isMine == true){
-                    document.querySelector("#ij-"+i+j).style.backgroundColor = "red";
-                } else {
-                    document.querySelector("#ij-"+i+j).style.backgroundColor = "blue";
-                    document.querySelector("#ij-"+i+j).textContent = board[i][j].minesAroundCount;
-                }
-            } else{
-                if (board[i][j].isMarked){
-                    document.querySelector("#ij-"+i+j).style.backgroundColor = "orange";
-                } else {
-                    document.querySelector("#ij-"+i+j).style.backgroundColor = "green";
-                }
-            }
-            }
+    let table = `<table id = "board">`;
+    for(let i = 0; i < board.length; i ++){
+        table += `<tr>`;
+        for(let j = 0; j < board.length; j++){
+            table += `<td id = "ij-${i}-${j}"></td>`
         }
+        table += `</tr>`;
     }
+    table  += `</table>`;
+    document.getElementById('table-container').innerHTML = table
 
 
-function setMinesNegsCount(board){
-    let counter = 0;
+
+
     for(let i = 0; i < board.length; i++){
-        for(let j = 0; j <board[i].length; j++){
-            if (i != 0 && i !=3 && j != 0 && j != 3){
-                if (board[i][j+1].isMine){
-                    counter++;
+        for(let j = 0; j < board.length; j++){
+            if (board[i][j].isMine == true){
+               if (board[i][j].isShown == true){
+                   document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'red';
                 }
-                if (board[i][j-1].isMine){
-                    counter++;
-                }
-                if (board[i-1][j].isMine){
-                    counter++;
-                }
-                if (board[i+1][j].isMine){
-                    counter++;
-                }
-                if (board[i+1][j+1].isMine){
-                    counter++;
-                }
-                if(board[i-1][j-1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j-1].isMine){
-                    counter++;
-                }
-                if(board[i-1][j+1].isMine){
-                    counter++;
+            }else{
+                if (board[i][j].isShown == true){
+                    document.getElementById("ij-"+i +"-"+j).style.backgroundColor = 'blue';
+                    document.getElementById("ij-"+i +"-"+j).innerHTML = board[i][j].MinesAroundCount;
                 }
 
-            } else if (i == 0 && j == 0) {
-                if (board[i][j+1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j+1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j].isMine){
-                    counter++;         
-                }
-            } else if ( i == 3 && j == 3){
-                if(board[i-1][j-1].isMine){
-                    counter++;
-                }
-                if (board[i-1][j].isMine){
-                    counter++;
-                }
-                if (board[i][j-1].isMine){
-                    counter++;
-                }
-            } else if (i == 0 && j == 3){
-                if (board[i+1][j-1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j].isMine){
-                    counter++;
-                }
-                if (board[i][j-1].isMine){
-                    counter++;
-                }
-
-            } else if (i == 3 && j == 0){
-                if(board[i-1][j+1].isMine){
-                    counter++;
-                }
-                if (board[i][j+1].isMine){
-                    counter++;
-                }
-                if (board[i-1][j].isMine){
-                    counter++;
-                }
-            } else if ( i == 0 && j != 0 && j != 3) {
-                if (board[i][j+1].isMine){
-                    counter++;
-                }
-                if (board[i][j-1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j].isMine){
-                    counter++;
-                }
-                if (board[i+1][j+1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j-1].isMine){
-                    counter++;
-                }
-                
-            } else if (i == 3 && j != 0 && j != 3) {
-                if (board[i][j+1].isMine){
-                    counter++;
-                }
-                if (board[i][j-1].isMine){
-                    counter++;
-                }
-                if (board[i-1][j].isMine){
-                    counter++;
-                }
-                if(board[i-1][j-1].isMine){
-                    counter++;
-                }
-                if(board[i-1][j+1].isMine){
-                    counter++;
-                }
-            } else if (j == 0 && i != 0 && i != 3) {
-                if (board[i][j+1].isMine){
-                    counter++;
-                }
-                if (board[i-1][j].isMine){
-                    counter++;
-                }
-                if (board[i+1][j].isMine){
-                    counter++;
-                }
-                if (board[i+1][j+1].isMine){
-                    counter++;
-                }
-                if(board[i-1][j+1].isMine){
-                    counter++;
-                }
-            } else if (j == 3 && i !=0 && i != 3) {
-                if (board[i][j-1].isMine){
-                    counter++;
-                }
-                if (board[i-1][j].isMine){
-                    counter++;
-                }
-                if (board[i+1][j].isMine){
-                    counter++;
-                }
-                if(board[i-1][j-1].isMine){
-                    counter++;
-                }
-                if (board[i+1][j-1].isMine){
-                    counter++;
-                }
             }
-            board[i][j].minesAroundCount = counter;
-            counter = 0;
         }
     }
-}
-
-randomizeMine(gBoard);
-setMinesNegsCount(gBoard);
-renderBoard(gBoard)
-console.log(gBoard)
-
-function cellClicked(event){
-    var identity = event.target.id.slice(3);
-    var i = Number(identity[0]);
-    var j = Number(identity[1]);
-    gBoard[i][j].isShown = true;
-    expandShown(gBoard,i,j);
-    renderBoard(gBoard);
-}
-
-
-
-document.querySelector("table").addEventListener("click",function(event){
-    cellClicked(event);
-
-})
-
-document.querySelector("table").addEventListener("contextmenu", function(event){
-    var identity = event.target.id.slice(3);
-    var i = Number(identity[0]);
-    var j = Number(identity[1]);
-    cellMarked(i,j,gBoard);
-    event.preventDefault();
-    
-})
-
-
-function cellMarked(i,j,board){
-    if (board[i][j].isMarked == true){
-        board[i][j].isMarked = false
-
-    } else {
-        board[i][j].isMarked = true
-    }
-    renderBoard(board)
-}
-    
-    
-//document.getElementById("#ij-01").classList.add(".flag");
-
-
-function expandShown(board, i, j){
-    if ( board[i][j].minesAroundCount == 0 && board[i][j].isMine == false){
-        if (i != 0 && i !=3 && j != 0 && j != 3){
-            if (board[i][j+1].isShown == false){
-                board[i][j+1].isShown = true;
-            }
-            if (board[i][j-1].isShown == false){
-                board[i][j-1].isShown = true;
-            }
-            if (board[i-1][j].isShown == false){
-                board[i-1][j].isShown = true;
-            }
-            if (board[i+1][j].isShown == false){
-                board[i+1][j].isShown = true;
-            }
-            if (board[i+1][j+1].isShown == false){
-                board[i+1][j+1].isShown =true;
-            }
-            if(board[i-1][j-1].isShown == false){
-                board[i-1][j-1].isShown = true;
-            }
-            if (board[i+1][j-1].isShown == false){
-                board[i+1][j-1].isShown = true;
-            }
-            if(board[i-1][j+1].isShown == false){
-                board[i-1][j+1].isShown = true;
-            }
-
-        } else if (i == 0 && j == 0) {
-            if (board[i][j+1].isShown == false){
-                board[i][j+1].isShown = true;
-            }
-            if (board[i+1][j+1].isShown == false){
-                board[i+1][j+1].isShown = true;
-            }
-            if (board[i+1][j].isShown == false){
-                board[i+1][j].isShown = true;         
-            }
-        } else if ( i == 3 && j == 3){
-            if(board[i-1][j-1].isShown == false){
-                board[i-1][j-1].isShown = true;
-            }
-            if (board[i-1][j].isShown == false){
-                board[i-1][j].isShown = true;
-            }
-            if (board[i][j-1].isShown == false){
-                board[i][j-1].isShown = true;
-            }
-        } else if (i == 0 && j == 3){
-            if (board[i+1][j-1].isShown == false){
-                board[i+1][j-1].isShown = true;
-            }
-            if (board[i+1][j].isShown == false){
-                board[i+1][j].isShown = true;
-            }
-            if (board[i][j-1].isShown == false){
-                board[i][j-1].isShown = true;
-            }
-
-        } else if (i == 3 && j == 0){
-            if(board[i-1][j+1].isShown == false){
-                board[i-1][j+1].isShown = true;
-            }
-            if (board[i][j+1].isShown == false){
-                board[i][j+1].isShown = true;
-            }
-            if (board[i-1][j].isShown == false){
-                board[i-1][j].isShown = true;
-            }
-        } else if ( i == 0 && j != 0 && j != 3) {
-            if (board[i][j+1].isShown == false){
-                board[i][j+1].isShown = true;
-            }
-            if (board[i][j-1].isShown == false){
-                board[i][j-1].isShown = true;
-            }
-            if (board[i+1][j].isShown == false){
-                board[i+1][j].isShown = true;
-            }
-            if (board[i+1][j+1].isShown == false){
-                board[i+1][j+1].isShown = true;
-            }
-            if (board[i+1][j-1].isShown == false){
-                board[i+1][j-1].isShown = true;
-            }
-            
-        } else if (i == 3 && j != 0 && j != 3) {
-            if (board[i][j+1].isShown == false){
-                board[i][j+1].isShown = true;
-            }
-            if (board[i][j-1].isShown == false){
-                board[i][j-1].isShown = true;
-            }
-            if (board[i-1][j].isShown == false){
-                board[i-1][j].isShown = true;
-            }
-            if(board[i-1][j-1].isShown == false){
-                board[i-1][j-1].isShown = true;
-            }
-            if(board[i-1][j+1].isShown == false){
-                board[i-1][j+1].isShown = true;
-            }
-        } else if (j == 0 && i != 0 && i != 3) {
-            if (board[i][j+1].isShown == false){
-                board[i][j+1].isShown = true;
-            }
-            if (board[i-1][j].isShown == false){
-                board[i-1][j].isShown = true;
-            }
-            if (board[i+1][j].isShown == false){
-                board[i+1][j].isShown = true;
-            }
-            if (board[i+1][j+1].isShown == false){
-                board[i+1][j+1].isShown = true;
-            }
-            if(board[i-1][j+1].isShown == false){
-                board[i-1][j+1].isShown = true;
-            }
-        } else if (j == 3 && i !=0 && i != 3) {
-            if (board[i][j-1].isShown == false){
-                board[i][j-1].isShown = true;
-            }
-            if (board[i-1][j].isShown == false){
-                board[i-1][j].isShown = true;
-            }
-            if (board[i+1][j].isShown == false){
-                board[i+1][j].isShown = true;
-            }
-            if(board[i-1][j-1].isShown == false){
-                board[i-1][j-1].isShown = true;
-            }
-            if (board[i+1][j-1].isShown == false){
-                board[i+1][j-1].isShown = true;
-            }
-        }
-
-
-    }
 
 
 }
 
 
+//var test = createBoard(8,12);
+var test = createBoard(12,30);
+//var test = createBoard(4,2);
+setMinesNegsCount(test);
+renderBoard(test);
 
 
 
@@ -400,14 +137,10 @@ function expandShown(board, i, j){
 
 
 
+/*
+function renderBoard(){
+    document.getElementById('board').innerHTML = 'hhh'
+}
 
-
-
-
- 
-
-
-
-
-
-
+renderBoard();
+*/
