@@ -110,11 +110,24 @@ function renderBoard(board){
             if (board[i][j].isMine == true){
                if (board[i][j].isShown == true){
                    document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'red';
+                } else {
+                    if (board[i][j].isMarked == true){
+                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'orange';
+
+                    } else{
+                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'green';
+                    }
                 }
             }else{
                 if (board[i][j].isShown == true){
                     document.getElementById("ij-"+i +"-"+j).style.backgroundColor = 'blue';
                     document.getElementById("ij-"+i +"-"+j).innerHTML = board[i][j].MinesAroundCount;
+                } else{
+                    if(board[i][j].isMarked == true){
+                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'orange';
+                    } else {
+                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'green';
+                    }
                 }
 
             }
@@ -124,12 +137,79 @@ function renderBoard(board){
 
 }
 
+function expandShown(board,Ci,Cj){
+    if(board[Ci][Cj].MinesAroundCount == 0 && board[Ci][Cj].isMine == false){
+        for (let i = Ci-1; i <= Ci + 1; i++){
+            if(i < 0 || i >= board.length){
+               continue;
+            }
+            for(let j = Cj - 1; j <= Cj + 1; j++){
+                if(j < 0 || j >= board.length){
+                    continue;
+                }
+                if ((Ci == i && Cj == j)){
+                    continue;
+                }
+                board[i][j].isShown = true;
+            }
+        }
+    }
+
+}
+
+function cellClicked(board,i,j){
+    if (board[i][j].isShown == false && board[i][j].isMarked == false){
+       board[i][j].isShown = true;
+       expandShown(board,i,j);
+       renderBoard(board)
+    }
+}
+
+function cellMarked(board,i,j){
+    if (board[i][j].isShown == false){
+        if (board[i][j].isMarked == true) {
+            board[i][j].isMarked = false
+        } else {
+            board[i][j].isMarked = true
+        }
+        renderBoard(board);
+    }
+}
 
 //var test = createBoard(8,12);
 var test = createBoard(12,30);
 //var test = createBoard(4,2);
 setMinesNegsCount(test);
 renderBoard(test);
+
+document.addEventListener("click", function(event){
+    if (event.target.tagName == "TD") {
+        var identity = event.target.id.slice(3);
+        console.log(event.target.id.slice(3));
+        for(let i = 0; i < identity.length; i++){
+            if (identity[i] == '-'){
+                var r = Number(identity.slice(0,i));
+                var c = Number(identity.slice(i+1));
+            }
+        }
+        cellClicked(test,r,c);
+    }
+
+})
+
+document.addEventListener("contextmenu", function(event){
+    if (event.target.tagName == "TD") {
+        var identity = event.target.id.slice(3);
+        for(let i = 0; i < identity.length; i++){
+            if (identity[i] == '-'){
+                var r = Number(identity.slice(0,i));
+                var c = Number(identity.slice(i+1));
+            }
+        }
+        cellMarked(test,r,c);
+        event.preventDefault();
+    }
+})
 
 
 
