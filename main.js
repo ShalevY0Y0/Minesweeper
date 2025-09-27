@@ -7,6 +7,11 @@
 */
 
 // Factory
+
+var firstClick = true;
+
+
+
 function createCell(MinesAroundCount, isShown, isMine, isMarked){
     var cell = {
         MinesAroundCount: MinesAroundCount,
@@ -20,6 +25,7 @@ function createCell(MinesAroundCount, isShown, isMine, isMarked){
 
 
 // 4 X 4 -> 2 Mines, 8 X 8 -> 12 Mines, 12 X 12 -> 30 Mines
+/*
 function randomizeMines(size,Mines){
     var x = 0;
     var rowColArr = []; // all [i,j] of the matrix
@@ -40,6 +46,7 @@ function randomizeMines(size,Mines){
     }
     return randomMines;
 }
+    */
 
 
 // Creating 2D arrays of Cells
@@ -53,10 +60,12 @@ function createBoard(size,mines){
         }
         board.push(row)
     }
+    /*
     var randomMines = randomizeMines(size,mines);
     for(let i = 0; i < randomMines.length; i ++){ //[i,j,1]
         board[randomMines[i][0]][randomMines[i][1]].isMine = true;
     }
+        */
     
     return board;
 }
@@ -157,8 +166,61 @@ function expandShown(board,Ci,Cj){
 
 }
 
+function replantMinesExclude(board, mines, r, c){
+    var x = 0;
+    var rowColArr = []; // all [i,j] of the matrix
+    var randomMines = []; // here will be the random [i,j] places that will be used for Mines
+    for(let i = 0; i < board.length; i++){
+        for(let j = 0; j < board.length; j++){
+            if(i == r && c == j){
+                continue
+            } else {
+                rowColArr.push([i,j,0]);
+            }
+        }
+    }
+    console.log(rowColArr);
+    
+    while(x != mines){
+        var randomIndex = Math.floor(Math.random()*(((board.length) ** 2) - 1)); // if 8 X 8 then i = 0,...,63
+            if (rowColArr[randomIndex][2] == 0){
+                randomMines.push(rowColArr[randomIndex])
+                rowColArr[randomIndex][2] += 1;
+                x++;
+            }
+    }
+    console.log(randomMines);
+   
+
+    for(let i = 0; i < randomMines.length; i ++){ //[i,j,1]
+        board[randomMines[i][0]][randomMines[i][1]].isMine = true;
+    }
+
+    console.log(board);
+
+    setMinesNegsCount(board)
+    
+
+}
+
 function cellClicked(board,i,j){
     if (board[i][j].isShown == false && board[i][j].isMarked == false){
+        if(firstClick){
+            if (board.length == 4){
+                replantMinesExclude(board, 2, i, j);
+            }
+
+            if (board.length == 8) {
+                replantMinesExclude(board, 12, i, j);
+            }
+
+            if(board.length == 12){
+                replantMinesExclude(board, 30, i, j);
+            }
+            firstClick = false;
+        }
+
+
        board[i][j].isShown = true;
        expandShown(board,i,j);
        renderBoard(board)
@@ -176,10 +238,10 @@ function cellMarked(board,i,j){
     }
 }
 
-//var test = createBoard(8,12);
-var test = createBoard(12,30);
+var test = createBoard(8,12);
+//var test = createBoard(12,30);
 //var test = createBoard(4,2);
-setMinesNegsCount(test);
+//setMinesNegsCount(test);
 renderBoard(test);
 
 document.addEventListener("click", function(event){
