@@ -1,20 +1,23 @@
-let gBoard;
+var gBoard;
 
 var gLevel = {
-    size: 4,
-    mines: 2
+    size: 8,
+    mines: 12
 }
+   
     
 
 var gGame = {
     isOn: false,
     showCount: 0,
-    markedCount: 0
+    markedCount: 0,
+    lifes: 3,
+    secPassed: 0
 }
 
 
 
-var firstClick = true;
+var firstClick;
 
 function myFunc(){
     alert("Worked!");
@@ -84,7 +87,7 @@ function setMinesNegsCount(board){
 
 
 function renderBoard(board){
-    let table = `<table id = "board">`;
+    let table = `<table id = "board"> <div id = "btn-container"><button onclick = "startGame(4,2)">Easy</button><button onclick = "startGame(8,12)">Intermediate</button><button onclick = "startGame(12,30)">Expert</button></div><div id = "restart-container"> <div id = "remainningMarks">${gLevel.size-gGame.markedCount}</div> <button id = "emoji" onclick = "startGame(gLevel.size,gLevel.mines)">😃</button> <div id = "time">${gGame.secPassed}</div></div>`;
     for(let i = 0; i < board.length; i ++){
         table += `<tr>`;
         for(let j = 0; j < board.length; j++){
@@ -92,31 +95,69 @@ function renderBoard(board){
         }
         table += `</tr>`;
     }
-    table  += `</table>`;
+    if(gGame.lifes == 3){
+        table  += `</table><div id = "life-container"> ♥️ ♥️ ♥️ </div>`;
+    } else if(gGame.lifes == 2){
+        table  += `</table> <div id = "life-container"> ♥️ ♥️</div>`;
+    } else if(gGame.lifes == 1){
+        table  += `</table> <div id = "life-container"> ♥️ </div>`;
+    } else{
+        `</table> <div id = "life-container"></div>`;
+    }
     document.getElementById('table-container').innerHTML = table
 
     for(let i = 0; i < board.length; i++){
         for(let j = 0; j < board.length; j++){
             if (board[i][j].isMine == true){
                if (board[i][j].isShown == true){
-                   document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'red';
+                   //document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'red';
+                   document.getElementById("ij-"+i +"-"+ j).innerHTML= '💣';
+
                 } else {
                     if (board[i][j].isMarked == true){
-                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'orange';
+                        document.getElementById("ij-"+i +"-"+ j).innerHTML= '🚩';
 
                     } else{
-                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'green';
+                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = '#c3c3c3;';
                     }
                 }
             }else{
                 if (board[i][j].isShown == true){
-                    document.getElementById("ij-"+i +"-"+j).style.backgroundColor = 'blue';
+                    document.getElementById("ij-"+i +"-"+j).style.backgroundColor = 'rgb(255,255,255)';
                     document.getElementById("ij-"+i +"-"+j).innerHTML = board[i][j].MinesAroundCount;
+                    if (board[i][j].MinesAroundCount == 0){
+                        document.getElementById("ij-"+i +"-"+j).innerHTML = '';
+
+                    } else if (board[i][j].MinesAroundCount == 1){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'blue';
+
+                    } else if(board[i][j].MinesAroundCount == 2){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'green';
+
+                    } else if (board[i][j].MinesAroundCount == 3){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'red';
+
+                    } else if(board[i][j].MinesAroundCount == 4){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'navy';
+
+                    } else if(board[i][j].MinesAroundCount == 5){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'maroon';
+
+                    } else if(board[i][j].MinesAroundCount == 6){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'teal';
+
+                    } else if(board[i][j].MinesAroundCount == 7){
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'black';
+
+                    } else{
+                        document.getElementById("ij-"+i +"-"+j).style.color = 'gray';
+
+                    }
                 } else{
                     if(board[i][j].isMarked == true){
-                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'orange';
+                        document.getElementById("ij-"+i +"-"+ j).innerHTML = '🚩';
                     } else {
-                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'green';
+                        document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = '#c3c3c3;';
                     }
                 }
 
@@ -164,7 +205,7 @@ function replantMinesExclude(board, mines, r, c){
             }
         }
     }
-    //console.log(rowColArr);
+    
     
     while(x != mines){
         var randomIndex = Math.floor(Math.random()*(((board.length) ** 2) - 1)); // if 8 X 8 then i = 0,...,63
@@ -174,19 +215,12 @@ function replantMinesExclude(board, mines, r, c){
                 x++;
             }
     }
-    //console.log(randomMines);
-   
-
-    for(let i = 0; i < randomMines.length; i ++){ //[i,j,1]
+    for(let i = 0; i < randomMines.length; i ++){ 
         board[randomMines[i][0]][randomMines[i][1]].isMine = true;
     }
-
-    //console.log(board);
-
     setMinesNegsCount(board)
-    
-
 }
+
 
 function cellClicked(board,i,j){
     if (gGame.isOn == false){
@@ -215,14 +249,12 @@ function cellClicked(board,i,j){
        }
        expandShown(board,i,j);
        renderBoard(board);
-       console.log(gGame.showCount);
-       console.log(gGame.markedCount);
     }
     checkGameOver();
+
 }
 
 function cellMarked(board,i,j){
-    //preventDefault();
     if (gGame.isOn == false){
         return;
     }
@@ -232,39 +264,110 @@ function cellMarked(board,i,j){
             gGame.markedCount--;
 
         } else {
-            board[i][j].isMarked = true
-            gGame.markedCount++;
+            if (gGame.markedCount < gLevel.size){
+                board[i][j].isMarked = true
+                gGame.markedCount++;
+            }
         }
         renderBoard(board);
     }
+    checkGameOver();
 }
 
+
+function showAllMines(board){
+    for(let i = 0; i < board.length; i++){
+        for(let j = 0; j < board.length; j++){
+            if(board[i][j].isMine == true){
+                board[i][j].isShown = true;
+            }
+        }
+    }
+
+}
+
+function allMinesAreMarked(board){
+    for(let i = 0; i < board.length; i++){
+        for(let j = 0; j < board.length; j++){
+            if(board[i][j].isMine == true){
+                if(board[i][j].isMarked != true){
+                    return false;
+
+                }
+            }
+        }
+    }
+    return true;
+
+}
 
 
 function checkGameOver(){
     for(let i = 0; i < gBoard.length; i++){
         for(let j = 0; j < gBoard.length; j++){
             if(gBoard[i][j].isMine == true && gBoard[i][j].isShown == true){
-                console.log("Game Over, You Lost !")
-                console.log(gGame.showCount);
+                if(gGame.lifes == 1){
+                console.log("Game Over, You Lost !");
+                showAllMines(gBoard);
+                renderBoard(gBoard);
+                document.getElementById("emoji").textContent = '😞';
+                document.getElementById("ij-"+i +"-"+ j).style.backgroundColor = 'red';
                 gGame.isOn = false;
-                break;
+                document.getElementById("life-container").innerHTML = '';
+                gGame.lifes--;
+                console.log(gBoard)
+                console.log(gBoard.showCount, gBoard.markedCount)
+                return;
+                } else if (gGame.lifes == 2){
+                    gGame.lifes--;
+                    document.getElementById("ij-"+i +"-"+ j).innerHTML = '💣';
+                    setTimeout(() => {
+                        document.getElementById("ij-"+i +"-"+ j).innerHTML = '';
+                    }, 1000);
+                    document.getElementById("life-container").innerHTML = '♥️';
+                    gBoard[i][j].isShown = false;
+                    console.log(gBoard)
+                    console.log(gGame.showCount, gGame.markedCount)
+                    return;
+                
+
+                } else {
+                    gGame.lifes--;
+                    document.getElementById("ij-"+i +"-"+ j).innerHTML = '💣';
+                    setTimeout(() => {
+                        document.getElementById("ij-"+i +"-"+ j).innerHTML = '';
+                    }, 1000);
+                    document.getElementById("life-container").innerHTML = '♥️♥️';
+                    gBoard[i][j].isShown = false;
+                    console.log(gBoard)
+                    console.log(gGame.showCount, gGame.markedCount)
+                    return;
+
+                }
             } 
         }
     }
-    if(gGame.showCount == ((gLevel.size**2) - gLevel.mines)){
+    if(gGame.showCount == ((gLevel.size**2) - gLevel.mines) && allMinesAreMarked(gBoard)){
         console.log("Game Over, You Won ! ! !");
+        document.getElementById("emoji").textContent = '😎';
         gGame.isOn = false;
     }
 }
 
-function startGame(){
+function startGame(size,mines){
+    firstClick = true;
+    gLevel.size = size;
+    gLevel.mines = mines;
     gGame.isOn = true;
+    gGame.showCount = 0;
+    gGame.markedCount = 0;
+    gGame.lifes = 3;
     gBoard = createBoard(gLevel.size,gLevel.mines);
     renderBoard(gBoard);
 }
 
-startGame();
+startGame(4,2);
+console.log(gLevel.size, gLevel.mines)
 
 
 
