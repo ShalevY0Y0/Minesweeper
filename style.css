@@ -63,7 +63,7 @@ td{
     background-color: rgb(195, 195, 195);
 }
 
-#remainningMarks{
+#remaining-marks{
     width: 40px;
     height: 30px;
     font-size: 20px;
@@ -112,7 +112,7 @@ td{
     width: 30px;
 }
 
-#safe-containor{
+#safe-container{
     display: flex;
     align-items: center;
     justify-content: center;

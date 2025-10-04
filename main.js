@@ -1,11 +1,11 @@
 let gBoard;
 
-let gLevel = {
+const gLevel = {
     size: 8,
     mines: 12
 }
 
-let gGame = {
+const gGame = {
 
     bestScoreLvl1: 0,
     bestScoreLvl2: 0,
@@ -23,13 +23,11 @@ let gGame = {
     hintsArr: [false,false,false],
     hintCurrNum: 0,
     safeArr: [false, false, false]
-
-
-
-
 }
 let firstClick;
+
 const cellEl = (i,j) => document.getElementById(`ij-${i}-${j}`);
+const NUM_COLOR = {1:'blue',2:'green',3:'red',4:'navy',5:'maroon',6:'teal',7:'black',8:'gray'};
 
 
 
@@ -96,20 +94,20 @@ function createBoard(size){
 }
 
 
-function setMinesNegsCountHelper(Ci,Cj,board){
-    for (let i = Ci-1; i <= Ci + 1; i++){
+function setMinesNegsCountHelper(cellI,cellJ,board){
+    for (let i = cellI-1; i <= cellI + 1; i++){
         if(i < 0 || i >= board.length){
             continue;
         }
-        for(let j = Cj - 1; j <= Cj + 1; j++){
+        for(let j = cellJ - 1; j <= cellJ + 1; j++){
             if(j < 0 || j >= board.length){
                 continue;
             }
-            if ((Ci == i && Cj == j)){
+            if ((cellI == i && cellJ == j)){
                 continue;
             }
             if (board[i][j].isMine == true){
-                board[Ci][Cj].minesAroundCount++;
+                board[cellI][cellJ].minesAroundCount++;
             }
         }
     }
@@ -134,7 +132,7 @@ function setMinesNegsCount(board){
 
 
 function renderBoard(board){
-    let controlers = `<div id = "bestTime"></div> <div id = "btn-container"><button onclick = "startGame(4,2)">Easy</button><button onclick = "startGame(8,12)">Intermediate</button><button onclick = "startGame(12,30)">Expert</button></div> <div id = "help-container"><div id = "safe-containor">  <div id = "lock-1" class = "lock" onclick = "clickedSafe(1)">🔒</div> <div id = "lock-2" class = "lock" onclick = "clickedSafe(2)">🔒</div> <div id = "lock-3" class = "lock" onclick = "clickedSafe(3)">🔒</div>   </div><div id = "hint-container"><div id = "hint-1" class = "hint" onclick ="clickedHint(1)">💡</div><div id = "hint-2" class = "hint" onclick ="clickedHint(2)">💡</div><div id = "hint-3" class = "hint" onclick ="clickedHint(3)">💡</div></div></div> <div id = "restart-container"><div id = "emoji-flag">🚩</div> <div id = "remainningMarks">${gLevel.mines-gGame.markedCount}</div> <button id = "emoji" onclick = "startGame(gLevel.size,gLevel.mines)">😃</button> <div id = "time">${gGame.secPassed}</div><div id = "emoji-timer">⏳</div></div>`
+    let controlers = `<div id = "bestTime"></div> <div id = "btn-container"><button onclick = "startGame(4,2)">Easy</button><button onclick = "startGame(8,12)">Intermediate</button><button onclick = "startGame(12,30)">Expert</button></div> <div id = "help-container"><div id = "safe-container">  <div id = "lock-1" class = "lock" onclick = "clickedSafe(1)">🔒</div> <div id = "lock-2" class = "lock" onclick = "clickedSafe(2)">🔒</div> <div id = "lock-3" class = "lock" onclick = "clickedSafe(3)">🔒</div>   </div><div id = "hint-container"><div id = "hint-1" class = "hint" onclick ="clickedHint(1)">💡</div><div id = "hint-2" class = "hint" onclick ="clickedHint(2)">💡</div><div id = "hint-3" class = "hint" onclick ="clickedHint(3)">💡</div></div></div> <div id = "restart-container"><div id = "emoji-flag">🚩</div> <div id = "remaining-marks">${gLevel.mines-gGame.markedCount}</div> <button id = "emoji" onclick = "startGame(gLevel.size,gLevel.mines)">😃</button> <div id = "time">${gGame.secPassed}</div><div id = "emoji-timer">⏳</div></div>`
 
     let table = `<table id = "board">`
     for(let i = 0; i < board.length; i ++){
@@ -191,7 +189,6 @@ function renderBoard(board){
             if (board[i][j].isMine == true){
                if (board[i][j].isShown == true){
                    cellEl(i,j).textContent= '💣';
-
                 } else {
                     if (board[i][j].isMarked == true){
                         cellEl(i,j).textContent= '🚩';
@@ -200,38 +197,17 @@ function renderBoard(board){
                         cellEl(i,j).style.backgroundColor = '#c3c3c3';
                     }
                 }
+
             }else{
                 if (board[i][j].isShown == true){
                     cellEl(i,j).style.backgroundColor = 'rgb(255,255,255)';
                     cellEl(i,j).textContent = board[i][j].minesAroundCount;
                     if (board[i][j].minesAroundCount == 0){
                         cellEl(i,j).textContent = '';
-
-                    } else if (board[i][j].minesAroundCount == 1){
-                        cellEl(i,j).style.color = 'blue';
-
-                    } else if(board[i][j].minesAroundCount == 2){
-                        cellEl(i,j).style.color = 'green';
-
-                    } else if (board[i][j].minesAroundCount == 3){
-                        cellEl(i,j).style.color = 'red';
-
-                    } else if(board[i][j].minesAroundCount == 4){
-                        cellEl(i,j).style.color = 'navy';
-
-                    } else if(board[i][j].minesAroundCount == 5){
-                        cellEl(i,j).style.color = 'maroon';
-
-                    } else if(board[i][j].minesAroundCount == 6){
-                        cellEl(i,j).style.color = 'teal';
-
-                    } else if(board[i][j].minesAroundCount == 7){
-                        cellEl(i,j).style.color = 'black';
-
                     } else{
-                        cellEl(i,j).style.color = 'gray';
-
+                        cellEl(i,j).style.color = `${NUM_COLOR[board[i][j].minesAroundCount]}`
                     }
+
                 } else{
                     if(board[i][j].isMarked == true){
                         cellEl(i,j).textContent = '🚩';
@@ -239,24 +215,22 @@ function renderBoard(board){
                         cellEl(i,j).style.backgroundColor = '#c3c3c3';
                     }
                 }
-
             }
         }
     }
-
 }
 
-function expandShown(board,Ci,Cj){
-    if(board[Ci][Cj].minesAroundCount == 0 && board[Ci][Cj].isMine == false){
-        for (let i = Ci-1; i <= Ci + 1; i++){
+function expandShown(board,cellI,cellJ){
+    if(board[cellI][cellJ].minesAroundCount == 0 && board[cellI][cellJ].isMine == false){
+        for (let i = cellI-1; i <= cellI + 1; i++){
             if(i < 0 || i >= board.length){
                continue;
             }
-            for(let j = Cj - 1; j <= Cj + 1; j++){
+            for(let j = cellJ - 1; j <= cellJ + 1; j++){
                 if(j < 0 || j >= board.length){
                     continue;
                 }
-                if ((Ci == i && Cj == j)){
+                if ((cellI == i && cellJ == j)){
                     continue;
                 }
                 if(board[i][j].isShown == false){
@@ -267,13 +241,10 @@ function expandShown(board,Ci,Cj){
                     if(board[i][j].minesAroundCount == 0){
                         expandShown(board,i,j);
                     }
-                    
                 }
-                
             }
         }
     }
-
 }
 
 function replantMinesExclude(board, mines, r, c){
@@ -492,7 +463,6 @@ function checkGameOver(){
                 document.getElementById("bestTime").textContent = `Best Time: ${gGame.bestScoreLvl3}`
             }
         }
-        
     }
 }
 
@@ -582,6 +552,8 @@ function startGame(size,mines){
     gGame.hintMode = false;
     gGame.hintInUse = false;
     gGame.safeArr = [false, false, false];
+
+
 
     gBoard = createBoard(gLevel.size);
     renderBoard(gBoard);
