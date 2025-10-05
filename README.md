@@ -1,4 +1,4 @@
-# Minesweeper (Vanilla JS)- The Well Known Minesweeper Game!
+# The Well Known Minesweeper Game ( With Vanilla JS) ! Game!
 
 A tiny Minesweeper built with **HTML + CSS + JavaScript** to practice state management, DOM updates, recursion (flood-fill), and `localStorage`.
 
