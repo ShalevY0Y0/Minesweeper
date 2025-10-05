@@ -114,6 +114,7 @@ function setMinesNegsCountHelper(cellI,cellJ,board){
 }
 
 
+
 function setMinesNegsCount(board){
     for(let r = 0; r < board.length; r++){
         for(let c = 0; c < board.length; c++){
