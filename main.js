@@ -330,7 +330,6 @@ function cellClicked(board,i,j){
         document.getElementById("hint-" + gGame.hintCurrNum).textContent= '';
         gGame.hintCurrNum = 0;
         gGame.hintInUse = false;
-        console.log(gBoard)
         return;
     }
 
@@ -368,7 +367,6 @@ function cellMarked(board,i,j){
                 gGame.markedCount++;
             }
         }
-        console.log(board);
         renderBoard(board);
     }
     checkGameOver();
@@ -408,7 +406,6 @@ function checkGameOver(){
             if(gBoard[i][j].isMine == true && gBoard[i][j].isShown == true){
 
                 if(gGame.lifes == 1){
-                console.log("Game Over, You Lost !");
                 showAllMines(gBoard);
                 renderBoard(gBoard);
                 document.getElementById("emoji").textContent = '😞';
