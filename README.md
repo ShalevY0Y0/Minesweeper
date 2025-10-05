@@ -3,8 +3,8 @@
 A tiny Minesweeper built with **HTML + CSS + JavaScript** to practice state management, DOM updates, recursion (flood-fill), and `localStorage`.
 
 ## Demo
-- Live: https://shaleyy0y0.github.io/Minesweeper/  
-- Repo: https://github.com/shaleyy0y0/Minesweeper
+- Live: https://shalevy0y0.github.io/Minesweeper/
+- Repo: https://github.com/ShalevY0Y0/Minesweeper.git
 
 ## Features
 - First-click is always safe (replants mines)
